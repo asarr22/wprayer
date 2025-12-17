@@ -1,6 +1,10 @@
 package com.example.wprayer
 
 import android.content.SharedPreferences
+import com.google.android.gms.wearable.Wearable
+import com.google.android.gms.wearable.DataClient
+import com.google.android.gms.wearable.DataEvent
+import com.google.android.gms.wearable.DataMapItem
 import androidx.wear.watchface.complications.data.ComplicationData
 import androidx.wear.watchface.complications.data.ComplicationType
 import androidx.wear.watchface.complications.data.PlainComplicationText
@@ -17,6 +21,39 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class PrayerComplicationService : SuspendingComplicationDataSourceService() {
+
+    private val dataListener = DataClient.OnDataChangedListener { dataEvents ->
+        for (event in dataEvents) {
+            if (event.type == DataEvent.TYPE_CHANGED) {
+                val path = event.dataItem.uri.path
+                if (path == "/prayer_location") {
+                    val dataMap = DataMapItem.fromDataItem(event.dataItem).dataMap
+                    try {
+                        val lat = dataMap.getDouble("lat")
+                        val long = dataMap.getDouble("long")
+                        val prefs: SharedPreferences = getSharedPreferences("FlutterSharedPreferences", MODE_PRIVATE)
+                        val editor = prefs.edit()
+                        // Use the same key format used by the Flutter shared_preferences plugin
+                        editor.putString("flutter.flutter.lat", lat.toString())
+                        editor.putString("flutter.flutter.long", long.toString())
+                        editor.apply()
+                    } catch (e: Exception) {
+                        // ignore malformed data
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        Wearable.getDataClient(this).addListener(dataListener)
+    }
+
+    override fun onDestroy() {
+        Wearable.getDataClient(this).removeListener(dataListener)
+        super.onDestroy()
+    }
 
     override fun getPreviewData(type: ComplicationType): ComplicationData? {
         return when (type) {
@@ -39,9 +76,9 @@ class PrayerComplicationService : SuspendingComplicationDataSourceService() {
     override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData? {
         val prefs: SharedPreferences = getSharedPreferences("FlutterSharedPreferences", MODE_PRIVATE)
         
-        // Get location
-        val lat = prefs.getString("flutter.lat", null)?.toDoubleOrNull() ?: 21.5433
-        val long = prefs.getString("flutter.long", null)?.toDoubleOrNull() ?: 39.1728
+        // Get location (the Flutter plugin prefixes keys with "flutter.")
+        val lat = prefs.getString("flutter.flutter.lat", null)?.toDoubleOrNull() ?: 21.5433
+        val long = prefs.getString("flutter.flutter.long", null)?.toDoubleOrNull() ?: 39.1728
         
         // Get language preference
         val languageCode = prefs.getString("flutter.language_code", null) ?: "en"

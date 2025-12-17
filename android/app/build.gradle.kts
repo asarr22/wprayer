@@ -45,6 +45,8 @@ dependencies {
     // FIXED: Added parentheses for Kotlin DSL syntax
     implementation("androidx.wear.watchface:watchface-complications-data-source-ktx:1.1.1")
     implementation("com.batoulapps.adhan:adhan:1.2.1")
+    // Wearable Data Layer for phone<->watch sync
+    implementation("com.google.android.gms:play-services-wearable:18.1.0")
 }
 
 // ADDED: This is the new, correct way to set Kotlin JVM target to 17

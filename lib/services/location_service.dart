@@ -28,7 +28,7 @@ class LocationService {
       locationSettings = AndroidSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 0,
-        forceLocationManager: false,
+        forceLocationManager: true,
       );
     } else {
       locationSettings = const LocationSettings(

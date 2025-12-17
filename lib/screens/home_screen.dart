@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:flutter/services.dart';
 import 'package:adhan/adhan.dart';
 import 'package:intl/intl.dart';
 import 'package:wprayer/services/location_service.dart';
@@ -19,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final LocationService _locationService = LocationService();
+  static const platform = MethodChannel('com.example.wprayer/location');
   String _locationName = "";
   PrayerTimes? _prayerTimes;
   Prayer? _nextPrayer;
@@ -85,6 +88,11 @@ class _HomeScreenState extends State<HomeScreen> {
           _locationName = errorMessage;
         });
       }
+      // If permission issues, show an in-app dialog to help the user grant permissions on the watch
+      if (e.toString().contains('Permission Denied') ||
+          e.toString().contains('permanently denied')) {
+        _showPermissionDialog(e.toString());
+      }
       if (kDebugMode) {
         // Print detailed error info to console for debugging
         print("=== ERROR in _initData ===");
@@ -95,12 +103,51 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _showPermissionDialog(String details) {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Location Permission Required'),
+          content: Text(
+              'The app needs location permission to provide accurate prayer times.\n\nDetails: $details'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                // Open app settings so the user can grant permissions manually
+                await Geolocator.openAppSettings();
+              },
+              child: const Text('Open Settings'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                // Retry getting location
+                _initData();
+              },
+              child: const Text('Retry'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _syncToNative(double lat, double long) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('flutter.lat', lat.toString());
     await prefs.setString('flutter.long', long.toString());
-    // Note: Complication update might need a MethodChannel trigger ideally,
-    // but Periodic updates will pick this up eventually.
+    // Also notify native to sync to watch via MethodChannel
+    try {
+      await platform.invokeMethod('syncLocationToWatch', {
+        'lat': lat,
+        'long': long,
+      });
+    } on PlatformException catch (e) {
+      if (kDebugMode) print('Failed to sync to watch: ${e.message}');
+    }
   }
 
   @override
