@@ -6,31 +6,8 @@ import 'package:geocoding/geocoding.dart';
 
 class LocationService {
   Future<Position> determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Check if the device's location services are enabled
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
-    }
-
-    // Request permission if needed (handles "unableToDetermine" as well)
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.unableToDetermine) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.unableToDetermine) {
-        return Future.error('Location permissions are denied');
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      return Future.error(
-        'Location permissions are permanently denied, we cannot request permissions.',
-      );
-    }
+    await _ensureServiceEnabled();
+    await _ensurePermissionsGranted();
 
     // Try to get the last known position first.
     // This fixes the 'LOCATION_SERVICES_DISABLED' crash on devices where
@@ -61,23 +38,15 @@ class LocationService {
     }
 
     try {
-      return await Geolocator.getCurrentPosition(
-        locationSettings: locationSettings,
-        timeLimit: const Duration(seconds: 15),
-      );
-    } on TimeoutException {
-      // Fall back to the first available location from the stream on slow devices
-      return await Geolocator.getPositionStream(
-        locationSettings: locationSettings,
-      ).first.timeout(
-        const Duration(seconds: 10),
-        onTimeout: () =>
-            throw TimeoutException('Timed out while waiting for location'),
-      );
+      return await _getCurrentOrStreamPosition(locationSettings);
     } on LocationServiceDisabledException {
-      return Future.error('Location services are disabled.');
+      // Give the user a chance to re-enable location and retry once.
+      await _ensureServiceEnabled();
+      return _getCurrentOrStreamPosition(locationSettings);
     } on PermissionDeniedException {
-      return Future.error('Location permissions are denied');
+      // If permissions were revoked mid-flow, request once more.
+      await _ensurePermissionsGranted();
+      return _getCurrentOrStreamPosition(locationSettings);
     }
   }
 
@@ -92,5 +61,60 @@ class LocationService {
       // Ignore Geocoding errors (e.g. no internet)
     }
     return "Unknown Location";
+  }
+
+  Future<void> _ensureServiceEnabled() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
+    if (serviceEnabled) return;
+
+    await Geolocator.openLocationSettings();
+    // Give the OS time to reflect the state change before re-checking.
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      throw LocationServiceDisabledException();
+    }
+  }
+
+  Future<void> _ensurePermissionsGranted() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.unableToDetermine) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.unableToDetermine) {
+      throw PermissionDeniedException('Location permissions are denied');
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      throw PermissionDeniedException(
+        'Location permissions are permanently denied, we cannot request permissions.',
+      );
+    }
+  }
+
+  Future<Position> _getCurrentOrStreamPosition(
+    LocationSettings locationSettings,
+  ) async {
+    try {
+      return await Geolocator.getCurrentPosition(
+        locationSettings: locationSettings,
+        timeLimit: const Duration(seconds: 15),
+      );
+    } on TimeoutException {
+      // Fall back to the first available location from the stream on slow devices.
+      return await Geolocator.getPositionStream(
+        locationSettings: locationSettings,
+      ).first.timeout(
+        const Duration(seconds: 10),
+        onTimeout: () =>
+            throw TimeoutException('Timed out while waiting for location'),
+      );
+    }
   }
 }
