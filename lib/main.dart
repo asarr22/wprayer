@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:wprayer/utils/localization/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(
-    ChangeNotifierProvider(create: (_) => LocaleProvider(), child: const App()),
-  );
+  runApp(const ProviderScope(child: App()));
 }

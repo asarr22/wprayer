@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wprayer/providers/locale_provider.dart';
 import 'package:wprayer/utils/constants/colors.dart';
 import 'package:wprayer/utils/constants/sizes.dart';
 import 'package:wprayer/utils/localization/app_localizations.dart';
-import 'package:wprayer/utils/localization/locale_provider.dart';
 import 'package:wprayer/screens/language_screen.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final localeProvider = Provider.of<LocaleProvider>(context);
+    final locale = ref.watch(localeProvider);
 
     // Get current language name
     String currentLanguage = loc.systemDefault;
-    if (localeProvider.locale?.languageCode == 'en') {
-      currentLanguage = 'English';
-    } else if (localeProvider.locale?.languageCode == 'ar') {
-      currentLanguage = 'العربية';
+    if (locale?.languageCode == 'en') {
+      currentLanguage = loc.english;
+    } else if (locale?.languageCode == 'ar') {
+      currentLanguage = loc.arabic;
     }
 
     return Scaffold(

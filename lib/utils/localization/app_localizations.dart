@@ -38,6 +38,24 @@ class AppLocalizations {
       _localizedValues[locale.languageCode]!['select_language']!;
   String get systemDefaultDesc =>
       _localizedValues[locale.languageCode]!['system_default_desc']!;
+  String get unknownLocation =>
+      _localizedValues[locale.languageCode]!['unknown_location']!;
+
+  String get error => _localizedValues[locale.languageCode]!['error']!;
+  String get locationFailed =>
+      _localizedValues[locale.languageCode]!['location_failed']!;
+  String get usingDefault =>
+      _localizedValues[locale.languageCode]!['using_default']!;
+  String get locationPermissionRequired =>
+      _localizedValues[locale.languageCode]!['location_permission_required']!;
+  String get locationPermissionDesc =>
+      _localizedValues[locale.languageCode]!['location_permission_desc']!;
+  String get details => _localizedValues[locale.languageCode]!['details']!;
+  String get openSettings =>
+      _localizedValues[locale.languageCode]!['open_settings']!;
+  String get retry => _localizedValues[locale.languageCode]!['retry']!;
+  String get english => _localizedValues[locale.languageCode]!['english']!;
+  String get arabic => _localizedValues[locale.languageCode]!['arabic']!;
 
   // Prayer names
   String get fajr => _localizedValues[locale.languageCode]!['fajr']!;
@@ -80,6 +98,18 @@ class AppLocalizations {
       'system_default': 'System Default',
       'select_language': 'Select your preferred language',
       'system_default_desc': 'Use device language',
+      'unknown_location': 'Unknown Location',
+      'error': 'Error',
+      'location_failed': 'Location failed',
+      'using_default': 'Using default',
+      'location_permission_required': 'Location Permission Required',
+      'location_permission_desc':
+          'The app needs location permission to provide accurate prayer times.',
+      'details': 'Details',
+      'open_settings': 'Open Settings',
+      'retry': 'Retry',
+      'english': 'English',
+      'arabic': 'Arabic',
       'fajr': 'Fajr',
       'sunrise': 'Sunrise',
       'dhuhr': 'Dhuhr',
@@ -100,6 +130,18 @@ class AppLocalizations {
       'system_default': 'لغة النظام',
       'select_language': 'اختر لغتك المفضلة',
       'system_default_desc': 'اتبع لغة الجهاز',
+      'unknown_location': 'موقع غير معروف',
+      'error': 'خطأ',
+      'location_failed': 'فشل تحديد الموقع',
+      'using_default': 'تم استخدام الموقع الافتراضي',
+      'location_permission_required': 'مطلوب إذن الموقع',
+      'location_permission_desc':
+          'يحتاج التطبيق إلى إذن الموقع لتوفير مواقيت صلاة دقيقة.',
+      'details': 'التفاصيل',
+      'open_settings': 'افتح الإعدادات',
+      'retry': 'إعادة المحاولة',
+      'english': 'الإنجليزية',
+      'arabic': 'العربية',
       'fajr': 'الفجر',
       'sunrise': 'الشروق',
       'dhuhr': 'الظهر',

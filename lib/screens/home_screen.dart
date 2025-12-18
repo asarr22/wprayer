@@ -1,117 +1,72 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:adhan/adhan.dart';
 import 'package:intl/intl.dart';
-import 'package:wprayer/services/location_service.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:wprayer/models/prayer_state.dart';
+import 'package:wprayer/providers/prayer_provider.dart';
 import 'package:wprayer/utils/constants/colors.dart';
 import 'package:wprayer/utils/constants/sizes.dart';
-import 'package:wprayer/utils/constants/texts.dart';
 import 'package:wprayer/utils/localization/app_localizations.dart';
 import 'package:wprayer/screens/settings_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  final LocationService _locationService = LocationService();
-  static const platform = MethodChannel('com.example.wprayer/location');
-  String _locationName = "";
-  PrayerTimes? _prayerTimes;
-  Prayer? _nextPrayer;
-
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _initData();
+    // Trigger initial data load when the screen initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(prayerProvider.notifier).initData();
+    });
   }
 
-  Future<void> _initData() async {
-    try {
-      double latitude;
-      double longitude;
-      String cityCountry;
+  void _handleError(String? error) {
+    if (error == null || !mounted) return;
 
-      try {
-        // Try to get actual location
-        final position = await _locationService.determinePosition();
-        latitude = position.latitude;
-        longitude = position.longitude;
-        cityCountry = await _locationService.getCityCountry(
-          latitude,
-          longitude,
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final loc = AppLocalizations.of(context)!;
+      if (error == "LOCATION_SERVICES_DISABLED") {
+        // This case is often handled by the system or a specific dialog,
+        // but we can show a snackbar if needed.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${loc.enableLocation}. ${loc.usingDefault}.'),
+            duration: const Duration(seconds: 3),
+          ),
         );
-      } catch (locationError) {
-        // Fallback to default location (Mecca) if location services are disabled
-        print("Location error, using default: $locationError");
-        latitude = 21.4225; // Mecca
-        longitude = 39.8262;
-        cityCountry = "Mecca (${WTexts.default_})";
+      } else if (error.contains("denied")) {
+        _showPermissionDialog(error);
+      } else if (error.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${loc.locationFailed}: $error. ${loc.usingDefault}.',
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
       }
-
-      // Calculate Prayer Times
-      final coordinates = Coordinates(latitude, longitude);
-      final params = CalculationMethod.umm_al_qura.getParameters();
-      final date = DateComponents.from(DateTime.now());
-      final prayerTimes = PrayerTimes(coordinates, date, params);
-
-      // Sync with Native
-      await _syncToNative(latitude, longitude);
-
-      if (mounted) {
-        setState(() {
-          _locationName = cityCountry;
-          _prayerTimes = prayerTimes;
-          _nextPrayer = prayerTimes.nextPrayer();
-        });
-      }
-    } on Exception catch (e, stackTrace) {
-      String errorMessage = "Error";
-
-      // Check for specific error types
-      if (e.toString().contains('LOCATION_SERVICES_DISABLED')) {
-        errorMessage = "Enable Location";
-      } else if (e.toString().contains('denied')) {
-        errorMessage = "Permission Denied";
-      } else {
-        errorMessage = "Error: ${e.toString().substring(0, 30)}...";
-      }
-
-      if (mounted) {
-        setState(() {
-          _locationName = errorMessage;
-        });
-      }
-      // If permission issues, show an in-app dialog to help the user grant permissions on the watch
-      if (e.toString().contains('Permission Denied') ||
-          e.toString().contains('permanently denied')) {
-        _showPermissionDialog(e.toString());
-      }
-      if (kDebugMode) {
-        // Print detailed error info to console for debugging
-        print("=== ERROR in _initData ===");
-        print("Exception: $e");
-        print("Stack trace: $stackTrace");
-        print("========================");
-      }
-    }
+    });
   }
 
   void _showPermissionDialog(String details) {
     if (!mounted) return;
+    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Location Permission Required'),
+          title: Text(loc.locationPermissionRequired),
           content: Text(
-              'The app needs location permission to provide accurate prayer times.\n\nDetails: $details'),
+            '${loc.locationPermissionDesc}\n\n${loc.details}: $details',
+          ),
           actions: [
             TextButton(
               onPressed: () async {
@@ -119,15 +74,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Open app settings so the user can grant permissions manually
                 await Geolocator.openAppSettings();
               },
-              child: const Text('Open Settings'),
+              child: Text(loc.openSettings),
             ),
             TextButton(
               onPressed: () async {
                 Navigator.of(context).pop();
                 // Retry getting location
-                _initData();
+                ref.read(prayerProvider.notifier).initData(isRefresh: true);
               },
-              child: const Text('Retry'),
+              child: Text(loc.retry),
             ),
           ],
         );
@@ -135,23 +90,17 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> _syncToNative(double lat, double long) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('flutter.lat', lat.toString());
-    await prefs.setString('flutter.long', long.toString());
-    // Also notify native to sync to watch via MethodChannel
-    try {
-      await platform.invokeMethod('syncLocationToWatch', {
-        'lat': lat,
-        'long': long,
-      });
-    } on PlatformException catch (e) {
-      if (kDebugMode) print('Failed to sync to watch: ${e.message}');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final prayerState = ref.watch(prayerProvider);
+
+    // Use a listener to handle errors/dialogs
+    ref.listen(prayerProvider.select((s) => s.error), (previous, next) {
+      if (next != null && next != previous) {
+        _handleError(next);
+      }
+    });
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -160,12 +109,12 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _buildHeader(),
+                _buildHeader(prayerState),
                 const SizedBox(height: WSizes.spaceBetweenItems),
-                if (_prayerTimes != null) ...[
-                  _buildNextPrayerCard(),
+                if (prayerState.prayerTimes != null) ...[
+                  _buildNextPrayerCard(prayerState),
                   const SizedBox(height: WSizes.spaceBetweenSections),
-                  _buildPrayerList(),
+                  _buildPrayerList(prayerState),
                   const SizedBox(height: WSizes.spaceBetweenSections),
                   _buildSettingsButton(),
                 ] else
@@ -183,8 +132,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(PrayerState prayerState) {
     final loc = AppLocalizations.of(context)!;
+    final locationName = prayerState.locationName;
+    final isLoading = prayerState.isLoading;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -199,26 +150,55 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 4),
             Flexible(
               child: Text(
-                _locationName.isEmpty ? loc.locating : _locationName,
+                locationName.isEmpty
+                    ? loc.locating
+                    : (locationName == "Unknown Location"
+                          ? loc.unknownLocation
+                          : (locationName == "PERMISSION_DENIED"
+                                ? loc.permissionDenied
+                                : (locationName == "LOCATION_SERVICES_DISABLED"
+                                      ? loc.enableLocation
+                                      : locationName))),
                 style: Theme.of(context).textTheme.bodyLarge,
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
               ),
             ),
+            const SizedBox(width: 8),
+            if (isLoading)
+              const SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white70,
+                ),
+              )
+            else
+              InkWell(
+                onTap: () =>
+                    ref.read(prayerProvider.notifier).initData(isRefresh: true),
+                borderRadius: BorderRadius.circular(16),
+                child: const Padding(
+                  padding: EdgeInsets.all(4.0),
+                  child: Icon(Icons.refresh, color: Colors.white70, size: 16),
+                ),
+              ),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildNextPrayerCard() {
-    if (_nextPrayer == Prayer.none) {
-      return const SizedBox(); // Day ended
+  Widget _buildNextPrayerCard(PrayerState prayerState) {
+    final nextPrayer = prayerState.nextPrayer;
+    if (nextPrayer == null || nextPrayer == Prayer.none) {
+      return const SizedBox(); // Day ended or no prayer data
     }
 
     final loc = AppLocalizations.of(context)!;
-    final nextTime = _prayerTimes!.timeForPrayer(_nextPrayer!)!;
-    final prayerName = loc.getPrayerName(_nextPrayer!.name);
+    final nextTime = prayerState.prayerTimes!.timeForPrayer(nextPrayer)!;
+    final prayerName = loc.getPrayerName(nextPrayer.name);
     final timeStr = DateFormat.jm().format(nextTime);
 
     return Container(
@@ -250,21 +230,24 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildPrayerList() {
+  Widget _buildPrayerList(PrayerState prayerState) {
     final loc = AppLocalizations.of(context)!;
+    final prayerTimes = prayerState.prayerTimes!;
+    final nextPrayer = prayerState.nextPrayer;
+
     final prayers = [
-      (Prayer.fajr, _prayerTimes!.fajr),
-      (Prayer.dhuhr, _prayerTimes!.dhuhr),
-      (Prayer.asr, _prayerTimes!.asr),
-      (Prayer.maghrib, _prayerTimes!.maghrib),
-      (Prayer.isha, _prayerTimes!.isha),
+      (Prayer.fajr, prayerTimes.fajr),
+      (Prayer.dhuhr, prayerTimes.dhuhr),
+      (Prayer.asr, prayerTimes.asr),
+      (Prayer.maghrib, prayerTimes.maghrib),
+      (Prayer.isha, prayerTimes.isha),
     ];
 
     return Column(
       children: prayers.map((prayer) {
         final name = loc.getPrayerName(prayer.$1.name);
         final time = DateFormat.jm().format(prayer.$2);
-        final isNext = prayer.$1 == _nextPrayer;
+        final isNext = prayer.$1 == nextPrayer;
 
         return Container(
           margin: const EdgeInsets.only(bottom: 16),

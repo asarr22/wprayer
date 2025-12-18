@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class LocaleProvider extends ChangeNotifier {
-  Locale? _locale;
+final localeProvider = StateNotifierProvider<LocaleNotifier, Locale?>((ref) {
+  return LocaleNotifier();
+});
 
-  Locale? get locale => _locale;
-
-  LocaleProvider() {
+class LocaleNotifier extends StateNotifier<Locale?> {
+  LocaleNotifier() : super(null) {
     _loadLocale();
   }
 
@@ -15,18 +16,12 @@ class LocaleProvider extends ChangeNotifier {
     final languageCode = prefs.getString('language_code');
 
     if (languageCode != null) {
-      _locale = Locale(languageCode);
-      notifyListeners();
+      state = Locale(languageCode);
     }
   }
 
   Future<void> setLocale(Locale? locale) async {
-    if (locale == null) {
-      // System default
-      _locale = null;
-    } else {
-      _locale = locale;
-    }
+    state = locale;
 
     final prefs = await SharedPreferences.getInstance();
     if (locale == null) {
@@ -34,15 +29,11 @@ class LocaleProvider extends ChangeNotifier {
       await prefs.remove('flutter.language_code');
     } else {
       await prefs.setString('language_code', locale.languageCode);
-      // Also save with flutter. prefix for native complication access
       await prefs.setString('flutter.language_code', locale.languageCode);
     }
-
-    notifyListeners();
   }
 
   void clearLocale() {
-    _locale = null;
-    notifyListeners();
+    state = null;
   }
 }

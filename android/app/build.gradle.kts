@@ -45,6 +45,7 @@ dependencies {
     // FIXED: Added parentheses for Kotlin DSL syntax
     implementation("androidx.wear.watchface:watchface-complications-data-source-ktx:1.1.1")
     implementation("com.batoulapps.adhan:adhan:1.2.1")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
     // Wearable Data Layer for phone<->watch sync
     implementation("com.google.android.gms:play-services-wearable:18.1.0")
 }

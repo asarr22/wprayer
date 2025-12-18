@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wprayer/providers/locale_provider.dart';
 import 'package:wprayer/utils/constants/colors.dart';
 import 'package:wprayer/utils/constants/sizes.dart';
 import 'package:wprayer/utils/localization/app_localizations.dart';
-import 'package:wprayer/utils/localization/locale_provider.dart';
 
-class LanguageScreen extends StatelessWidget {
+class LanguageScreen extends ConsumerWidget {
   const LanguageScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final localeProvider = Provider.of<LocaleProvider>(context);
+    final locale = ref.watch(localeProvider);
+    final localeNotifier = ref.read(localeProvider.notifier);
 
     // Define available languages
     final languages = [
@@ -20,15 +21,15 @@ class LanguageScreen extends StatelessWidget {
         subtitle: loc.systemDefaultDesc,
         locale: null,
       ),
-      const LanguageOption(
+      LanguageOption(
         title: 'English',
-        subtitle: 'English',
-        locale: Locale('en'),
+        subtitle: loc.english,
+        locale: const Locale('en'),
       ),
-      const LanguageOption(
+      LanguageOption(
         title: 'العربية',
-        subtitle: 'Arabic',
-        locale: Locale('ar'),
+        subtitle: loc.arabic,
+        locale: const Locale('ar'),
       ),
     ];
 
@@ -61,8 +62,8 @@ class LanguageScreen extends StatelessWidget {
                       title: language.title,
                       subtitle: language.subtitle,
                       locale: language.locale,
-                      currentLocale: localeProvider.locale,
-                      onTap: () => localeProvider.setLocale(language.locale),
+                      currentLocale: locale,
+                      onTap: () => localeNotifier.setLocale(language.locale),
                     ),
                     if (index < languages.length - 1)
                       const SizedBox(height: WSizes.spaceBetweenItems),

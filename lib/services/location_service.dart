@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 
@@ -19,7 +20,9 @@ class LocationService {
       }
     } catch (e) {
       // Ignore errors here, move to current position
-      print("Debug: Last known position failed: $e");
+      if (kDebugMode) {
+        print("Debug: Last known position failed: $e");
+      }
     }
 
     LocationSettings locationSettings;
@@ -28,12 +31,14 @@ class LocationService {
       locationSettings = AndroidSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 0,
-        forceLocationManager: true,
+        forceLocationManager: true, // Often required for Wear OS standalone GPS
+        timeLimit: const Duration(seconds: 15),
       );
     } else {
       locationSettings = const LocationSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 0,
+        timeLimit: Duration(seconds: 15),
       );
     }
 
@@ -64,17 +69,29 @@ class LocationService {
   }
 
   Future<void> _ensureServiceEnabled() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (serviceEnabled) return;
 
-    if (serviceEnabled) return;
+      // On some watches, the first check might falsely report disabled.
+      await Future.delayed(const Duration(milliseconds: 300));
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (serviceEnabled) return;
 
-    await Geolocator.openLocationSettings();
-    // Give the OS time to reflect the state change before re-checking.
-    await Future.delayed(const Duration(milliseconds: 500));
+      // If still disabled, ask user to enable it.
+      await Geolocator.openLocationSettings();
+      await Future.delayed(const Duration(seconds: 2));
 
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      throw LocationServiceDisabledException();
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw const LocationServiceDisabledException();
+      }
+    } on PlatformException catch (e) {
+      if (e.code == 'LOCATION_SERVICES_DISABLED') {
+        throw const LocationServiceDisabledException();
+      }
+      // Re-throw if it's something else
+      rethrow;
     }
   }
 
@@ -104,7 +121,6 @@ class LocationService {
     try {
       return await Geolocator.getCurrentPosition(
         locationSettings: locationSettings,
-        timeLimit: const Duration(seconds: 15),
       );
     } on TimeoutException {
       // Fall back to the first available location from the stream on slow devices.
@@ -116,5 +132,25 @@ class LocationService {
             throw TimeoutException('Timed out while waiting for location'),
       );
     }
+  }
+
+  Stream<Position> getPositionStream() {
+    LocationSettings locationSettings;
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      locationSettings = AndroidSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 0,
+        intervalDuration: const Duration(seconds: 5),
+        forceLocationManager:
+            true, // Use hardware GPS directly if Fused is failing
+      );
+    } else {
+      locationSettings = const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 0,
+      );
+    }
+
+    return Geolocator.getPositionStream(locationSettings: locationSettings);
   }
 }
