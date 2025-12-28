@@ -43,21 +43,40 @@
             android:name="flutterEmbedding"
             android:value="2" />
         <service
-    android:name=".PrayerComplicationService"
-    android:exported="true"
-    android:label="Prayer Times"
-    android:icon="@mipmap/ic_launcher"
-    android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
-    <intent-filter>
-        <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
-    </intent-filter>
-    
-    <meta-data
-        android:name="android.support.wearable.complications.SUPPORTED_TYPES"
-        android:value="SHORT_TEXT,LONG_TEXT" />
-    <meta-data
-        android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
-        android:value="900" /> </service>
+            android:name=".PrayerComplicationService"
+            android:exported="true"
+            android:label="Prayer Time"
+            android:icon="@mipmap/ic_launcher"
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
+            <intent-filter>
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
+            </intent-filter>
+            
+            <meta-data
+                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+                android:value="SHORT_TEXT,LONG_TEXT" />
+            <meta-data
+                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+                android:value="900" />
+        </service>
+
+        <service
+            android:name=".PrayerCountdownComplicationService"
+            android:exported="true"
+            android:label="Prayer Countdown"
+            android:icon="@mipmap/ic_launcher"
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
+            <intent-filter>
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
+            </intent-filter>
+            
+            <meta-data
+                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+                android:value="SHORT_TEXT,LONG_TEXT" />
+            <meta-data
+                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+                android:value="900" />
+        </service>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
