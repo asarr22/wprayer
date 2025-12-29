@@ -1,10 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wprayer/providers/locale_provider.dart';
 import 'package:wprayer/utils/constants/colors.dart';
 import 'package:wprayer/utils/constants/sizes.dart';
 import 'package:wprayer/utils/localization/app_localizations.dart';
 import 'package:wprayer/screens/language_screen.dart';
+import 'package:wprayer/services/notification_service.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -46,6 +49,50 @@ class SettingsScreen extends ConsumerWidget {
                       builder: (context) => const LanguageScreen(),
                     ),
                   );
+                },
+              ),
+              if (kDebugMode) ...[
+                const SizedBox(height: WSizes.spaceBetweenItems),
+                _buildSettingItem(
+                  context,
+                  icon: Icons.notifications_active,
+                  title: "Native Test Notification",
+                  subtitle: "Schedules a test in 3 seconds",
+                  onTap: () async {
+                    await NotificationService().showTestNotification();
+                  },
+                ),
+                const SizedBox(height: WSizes.spaceBetweenItems),
+                _buildSettingItem(
+                  context,
+                  icon: Icons.flash_on,
+                  title: "Instant Native Test",
+                  subtitle: "Show notification NOW",
+                  onTap: () async {
+                    await NotificationService()
+                        .triggerInstantNativeNotification();
+                  },
+                ),
+              ],
+
+              const SizedBox(height: WSizes.spaceBetweenItems),
+              _buildSettingItem(
+                context,
+                icon: Icons.security,
+                title: "Request Permission",
+                subtitle: "Ask for notification permissions",
+                onTap: () async {
+                  await NotificationService().requestPermission();
+                },
+              ),
+              const SizedBox(height: WSizes.spaceBetweenItems),
+              _buildSettingItem(
+                context,
+                icon: Icons.settings_applications,
+                title: "App Settings",
+                subtitle: "Go to app settings",
+                onTap: () async {
+                  await NotificationService().openSettings();
                 },
               ),
             ],

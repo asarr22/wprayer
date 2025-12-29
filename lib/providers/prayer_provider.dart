@@ -7,21 +7,44 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import '../models/prayer_state.dart';
 import '../services/location_service.dart';
+import '../services/notification_service.dart';
+import 'locale_provider.dart';
 
 final prayerProvider = StateNotifierProvider<PrayerNotifier, PrayerState>((
   ref,
 ) {
-  return PrayerNotifier();
+  return PrayerNotifier(ref);
 });
 
 class PrayerNotifier extends StateNotifier<PrayerState> {
+  final Ref ref;
   final LocationService _locationService = LocationService();
+  final NotificationService _notificationService = NotificationService();
   static const platform = MethodChannel('com.example.wprayer/location');
   StreamSubscription<Position>? _locationSubscription;
   bool _disposed = false;
+  DateTime? _lastScheduledDate;
 
-  PrayerNotifier() : super(PrayerState()) {
+  PrayerNotifier(this.ref) : super(PrayerState()) {
     initData().then((_) => startLocationTracking());
+
+    // Schedule notifications when state or locale changes
+    ref.listenSelf((previous, next) {
+      final n = next as PrayerState;
+      if (n.prayerTimes != null) {
+        final prayerDate = n.prayerTimes!.fajr.day;
+        if (_lastScheduledDate?.day != prayerDate) {
+          _scheduleNotifications();
+          _lastScheduledDate = n.prayerTimes!.fajr;
+        }
+      }
+    });
+
+    ref.listen(localeProvider, (previous, next) {
+      if (state.prayerTimes != null) {
+        _scheduleNotifications();
+      }
+    });
   }
 
   @override
@@ -31,16 +54,39 @@ class PrayerNotifier extends StateNotifier<PrayerState> {
     super.dispose();
   }
 
+  Future<void> _scheduleNotifications() async {
+    final prayerTimes = state.prayerTimes;
+    if (prayerTimes == null) return;
+
+    final locale = ref.read(localeProvider);
+    final languageCode = locale?.languageCode ?? 'en';
+
+    final localizedNames = {
+      'fajr': languageCode == 'ar' ? 'الفجر' : 'Fajr',
+      'sunrise': languageCode == 'ar' ? 'الشروق' : 'Sunrise',
+      'dhuhr': languageCode == 'ar' ? 'الظهر' : 'Dhuhr',
+      'asr': languageCode == 'ar' ? 'العصر' : 'Asr',
+      'maghrib': languageCode == 'ar' ? 'المغرب' : 'Maghrib',
+      'isha': languageCode == 'ar' ? 'العشاء' : 'Isha',
+    };
+
+    final coordinates = prayerTimes.coordinates;
+    final params = CalculationMethod.umm_al_qura.getParameters();
+
+    if (kDebugMode) print("DEBUG: Updating native prayer notifications...");
+    await _notificationService.schedulePrayerNotifications(
+      coordinates: coordinates,
+      params: params,
+      languageCode: languageCode,
+      localizedPrayerNames: localizedNames,
+    );
+  }
+
   void startLocationTracking() {
     _locationSubscription?.cancel();
     try {
       _locationSubscription = _locationService.getPositionStream().listen(
         (position) {
-          if (kDebugMode) {
-            print(
-              "Location update: ${position.latitude}, ${position.longitude}",
-            );
-          }
           _updateWithPosition(position.latitude, position.longitude);
         },
         onError: (error) {
