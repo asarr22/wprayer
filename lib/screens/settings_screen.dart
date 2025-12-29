@@ -80,6 +80,8 @@ class SettingsScreen extends ConsumerWidget {
               ),
               if (kDebugMode) ...[
                 const SizedBox(height: WSizes.spaceBetweenItems),
+                Text("Debug", style: TextStyle(color: Colors.redAccent)),
+                const SizedBox(height: WSizes.spaceBetweenItems),
                 _buildSettingItem(
                   context,
                   icon: Icons.notifications_active,
