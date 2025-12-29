@@ -119,8 +119,9 @@ class NotificationService {
               'time': time.millisecondsSinceEpoch,
             });
           } catch (e) {
-            if (kDebugMode)
+            if (kDebugMode) {
               print('DEBUG: Error scheduling native notification: $e');
+            }
           }
         }
       }

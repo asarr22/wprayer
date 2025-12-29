@@ -1,3 +1,5 @@
+// ignore_for_file: no_leading_underscores_for_local_identifiers
+
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:adhan/adhan.dart';
@@ -81,8 +83,9 @@ class PrayerNotifier extends StateNotifier<PrayerState> {
         longitude = position.longitude;
         isFromGPS = true;
       } catch (e) {
-        if (kDebugMode)
+        if (kDebugMode) {
           print("DEBUG: Resilient search yielded no fresh fix: $e");
+        }
       }
 
       // 2. Try Cached SharedPreferences (Native or Flutter saved)
@@ -98,10 +101,11 @@ class PrayerNotifier extends StateNotifier<PrayerState> {
         if (nativeLat != null && nativeLong != null) {
           latitude = double.tryParse(nativeLat);
           longitude = double.tryParse(nativeLong);
-          if (kDebugMode)
+          if (kDebugMode) {
             print(
               "DEBUG: Using cached location from Phone Sync: $latitude, $longitude",
             );
+          }
         } else {
           // Try reading Flutter's own save
           final ownLat = prefs.getString('lat'); // Reads flutter.lat
@@ -109,10 +113,11 @@ class PrayerNotifier extends StateNotifier<PrayerState> {
           if (ownLat != null && ownLong != null) {
             latitude = double.tryParse(ownLat);
             longitude = double.tryParse(ownLong);
-            if (kDebugMode)
+            if (kDebugMode) {
               print(
                 "DEBUG: Using cached location from App History: $latitude, $longitude",
               );
+            }
           }
         }
       }
@@ -144,70 +149,82 @@ class PrayerNotifier extends StateNotifier<PrayerState> {
     final cityCountry = await _locationService.getCityCountry(lat, lng);
     final countryCode = await _locationService.getCountryCode(lat, lng);
 
-    // Save to both Native and Flutter keys to ensure sync
+    // Save to Flutter prefs
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('lat', lat.toString()); // flutter.lat
+    await prefs.setString('lat', lat.toString());
     await prefs.setString('long', lng.toString());
+
+    // Local helpers to map between String and CalculationMethod
+    CalculationMethod _fromString(String? value) {
+      switch (value) {
+        case "UMM_AL_QURA":
+          return CalculationMethod.umm_al_qura;
+        case "EGYPTIAN":
+          return CalculationMethod.egyptian;
+        case "KARACHI":
+          return CalculationMethod.karachi;
+        case "NORTH_AMERICA":
+          return CalculationMethod.north_america;
+        case "DUBAI":
+          return CalculationMethod.dubai;
+        case "KUWAIT":
+          return CalculationMethod.kuwait;
+        case "QATAR":
+          return CalculationMethod.qatar;
+        case "SINGAPORE":
+          return CalculationMethod.singapore;
+        case "TEHRAN":
+          return CalculationMethod.tehran;
+        case "TURKEY":
+          return CalculationMethod.turkey;
+        case "MWL":
+        default:
+          return CalculationMethod.muslim_world_league;
+      }
+    }
+
+    String _toString(CalculationMethod method) {
+      switch (method) {
+        case CalculationMethod.umm_al_qura:
+          return "UMM_AL_QURA";
+        case CalculationMethod.egyptian:
+          return "EGYPTIAN";
+        case CalculationMethod.karachi:
+          return "KARACHI";
+        case CalculationMethod.north_america:
+          return "NORTH_AMERICA";
+        case CalculationMethod.dubai:
+          return "DUBAI";
+        case CalculationMethod.kuwait:
+          return "KUWAIT";
+        case CalculationMethod.qatar:
+          return "QATAR";
+        case CalculationMethod.singapore:
+          return "SINGAPORE";
+        case CalculationMethod.tehran:
+          return "TEHRAN";
+        case CalculationMethod.turkey:
+          return "TURKEY";
+        case CalculationMethod.muslim_world_league:
+        default:
+          return "MWL";
+      }
+    }
 
     // Determine calculation method: User Preference > Auto Detect
     final userPrefMethod = prefs.getString('user_calculation_method');
+
     CalculationMethod calculationMethod;
     String methodString = "MWL"; // Default fallback
 
     if (userPrefMethod != null) {
-      // Use user selection
+      // Use user selection (fallback to MWL if invalid)
+      calculationMethod = _fromString(userPrefMethod);
       methodString = userPrefMethod;
-      if (userPrefMethod == "UMM_AL_QURA")
-        calculationMethod = CalculationMethod.umm_al_qura;
-      else if (userPrefMethod == "EGYPTIAN")
-        calculationMethod = CalculationMethod.egyptian;
-      else if (userPrefMethod == "KARACHI")
-        calculationMethod = CalculationMethod.karachi;
-      else if (userPrefMethod == "NORTH_AMERICA")
-        calculationMethod = CalculationMethod.north_america;
-      else if (userPrefMethod == "DUBAI")
-        calculationMethod = CalculationMethod.dubai;
-      else if (userPrefMethod == "KUWAIT")
-        calculationMethod = CalculationMethod.kuwait;
-      else if (userPrefMethod == "QATAR")
-        calculationMethod = CalculationMethod.qatar;
-      else if (userPrefMethod == "SINGAPORE")
-        calculationMethod = CalculationMethod.singapore;
-      else if (userPrefMethod == "TEHRAN")
-        calculationMethod = CalculationMethod.tehran;
-      else if (userPrefMethod == "TURKEY")
-        calculationMethod = CalculationMethod.turkey;
-      else if (userPrefMethod == "MWL")
-        calculationMethod = CalculationMethod.muslim_world_league;
-      else
-        calculationMethod = CalculationMethod.muslim_world_league;
     } else {
       // Auto detect
       calculationMethod = _getCalculationMethod(countryCode);
-
-      // Convert auto-detected method to string for sync
-      if (calculationMethod == CalculationMethod.umm_al_qura)
-        methodString = "UMM_AL_QURA";
-      else if (calculationMethod == CalculationMethod.egyptian)
-        methodString = "EGYPTIAN";
-      else if (calculationMethod == CalculationMethod.karachi)
-        methodString = "KARACHI";
-      else if (calculationMethod == CalculationMethod.north_america)
-        methodString = "NORTH_AMERICA";
-      else if (calculationMethod == CalculationMethod.dubai)
-        methodString = "DUBAI";
-      else if (calculationMethod == CalculationMethod.kuwait)
-        methodString = "KUWAIT";
-      else if (calculationMethod == CalculationMethod.qatar)
-        methodString = "QATAR";
-      else if (calculationMethod == CalculationMethod.singapore)
-        methodString = "SINGAPORE";
-      else if (calculationMethod == CalculationMethod.tehran)
-        methodString = "TEHRAN";
-      else if (calculationMethod == CalculationMethod.turkey)
-        methodString = "TURKEY";
-      else
-        methodString = "MWL";
+      methodString = _toString(calculationMethod);
     }
 
     final params = calculationMethod.getParameters();

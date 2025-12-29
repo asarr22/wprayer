@@ -16,9 +16,11 @@ class LocationService {
     try {
       bestPosition = await Geolocator.getLastKnownPosition();
       if (bestPosition != null && kDebugMode) {
-        print(
-          "DEBUG: Initial baseline from last known: ${bestPosition.latitude}, ${bestPosition.longitude} (Acc: ${bestPosition.accuracy})",
-        );
+        if (kDebugMode) {
+          print(
+            "DEBUG: Initial baseline from last known: ${bestPosition.latitude}, ${bestPosition.longitude} (Acc: ${bestPosition.accuracy})",
+          );
+        }
       }
     } catch (e) {
       if (kDebugMode) print("DEBUG: Error getting initial last known: $e");
@@ -27,8 +29,9 @@ class LocationService {
     // 3. Start a collection window. We removed the blocking 'isServiceEnabled' check
     // because on Wear OS, sometimes the stream can wake up the GPS even if the
     // high-level check returns false or is flaky.
-    if (kDebugMode)
+    if (kDebugMode) {
       print("DEBUG: Starting 5-second location collection window...");
+    }
 
     final completer = Completer<Position>();
     StreamSubscription<Position>? subscription;
@@ -44,10 +47,11 @@ class LocationService {
     Timer(const Duration(seconds: 5), () {
       if (!completer.isCompleted) {
         if (bestPosition != null) {
-          if (kDebugMode)
+          if (kDebugMode) {
             print(
               "DEBUG: 5s Collection window ended. Returning best fix (Acc: ${bestPosition?.accuracy})",
             );
+          }
           completer.complete(bestPosition!);
         } else {
           if (kDebugMode) print("DEBUG: 5s timeout. No fix found.");
@@ -62,19 +66,21 @@ class LocationService {
           (position) {
             if (bestPosition == null ||
                 position.accuracy < bestPosition!.accuracy) {
-              if (kDebugMode)
+              if (kDebugMode) {
                 print(
                   "DEBUG: New best fix: ${position.latitude}, ${position.longitude} (Acc: ${position.accuracy})",
                 );
+              }
               bestPosition = position;
             }
 
             if (position.accuracy < 15) {
               if (!completer.isCompleted) {
-                if (kDebugMode)
+                if (kDebugMode) {
                   print(
                     "DEBUG: High accuracy fix (<15m) found early. Completing.",
                   );
+                }
                 completer.complete(position);
                 subscription?.cancel();
               }

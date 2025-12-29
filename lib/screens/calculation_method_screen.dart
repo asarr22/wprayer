@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:adhan/adhan.dart';
 import 'package:wprayer/providers/prayer_provider.dart';
-import 'package:wprayer/utils/constants/colors.dart';
 import 'package:wprayer/utils/constants/sizes.dart';
 import 'package:wprayer/utils/localization/app_localizations.dart';
 
