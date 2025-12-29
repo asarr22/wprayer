@@ -5,6 +5,7 @@ import 'package:wprayer/utils/constants/sizes.dart';
 import 'package:wprayer/utils/localization/app_localizations.dart';
 import 'package:wprayer/screens/prayer_time_screen.dart';
 import 'package:wprayer/screens/settings_screen.dart';
+import 'package:wprayer/screens/quran/quran_home_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -43,6 +44,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const PTScreen()),
+                  ),
+                ),
+                const SizedBox(height: WSizes.spaceBetweenItems),
+                _mainMenuItem(
+                  context,
+                  icon: Icons.menu_book_rounded,
+                  title: loc.quran,
+                  subtitle: loc.readQuran,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const QuranHomeScreen(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: WSizes.spaceBetweenItems),

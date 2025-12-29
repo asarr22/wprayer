@@ -44,6 +44,8 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_riverpod: 2.5.1
+  quran_flutter: ^1.0.3
+
 
 dev_dependencies:
   flutter_test:

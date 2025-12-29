@@ -52,6 +52,16 @@ class AppLocalizations {
       _localizedValues[locale.languageCode]!['unknown_location']!;
   String get prayerTime =>
       _localizedValues[locale.languageCode]!['prayer_time']!;
+  String get quran => _localizedValues[locale.languageCode]!['quran']!;
+  String get readQuran => _localizedValues[locale.languageCode]!['read_quran']!;
+  String get makki => _localizedValues[locale.languageCode]!['makki']!;
+  String get madani => _localizedValues[locale.languageCode]!['madani']!;
+  String get versesCount =>
+      _localizedValues[locale.languageCode]!['verses_count']!;
+  String get showTranslation =>
+      _localizedValues[locale.languageCode]!['show_translation']!;
+  String get translationLanguage =>
+      _localizedValues[locale.languageCode]!['translation_language']!;
 
   String get error => _localizedValues[locale.languageCode]!['error']!;
   String get locationFailed =>
@@ -127,6 +137,13 @@ class AppLocalizations {
       'system_default_desc': 'Use device language',
       'unknown_location': 'Unknown Location',
       'prayer_time': 'Prayer Time',
+      'quran': 'Quran',
+      'read_quran': 'Read Quran',
+      'makki': 'Makki',
+      'madani': 'Madani',
+      'verses_count': 'Verses',
+      'show_translation': 'Show Translation',
+      'translation_language': 'Translation Language',
 
       'error': 'Error',
       'location_failed': 'Location failed',
@@ -174,6 +191,13 @@ class AppLocalizations {
       'system_default_desc': 'اتبع لغة الجهاز',
       'unknown_location': 'موقع غير معروف',
       'prayer_time': 'وقت الصلاة',
+      'quran': 'القرآن الكريم',
+      'read_quran': 'قراءة القرآن',
+      'makki': 'مكية',
+      'madani': 'مدنية',
+      'verses_count': 'آيات',
+      'show_translation': 'إظهار الترجمة',
+      'translation_language': 'لغة الترجمة',
 
       'error': 'خطأ',
       'location_failed': 'فشل تحديد الموقع',
@@ -221,6 +245,13 @@ class AppLocalizations {
       'system_default_desc': 'Utiliser la langue de l\'appareil',
       'unknown_location': 'Lieu inconnu',
       'prayer_time': 'Heure de Prière',
+      'quran': 'Coran',
+      'read_quran': 'Lire le Coran',
+      'makki': 'Makki',
+      'madani': 'Madani',
+      'verses_count': 'Versets',
+      'show_translation': 'Afficher la traduction',
+      'translation_language': 'Langue de traduction',
 
       'error': 'Erreur',
       'location_failed': 'Échec localisation',
@@ -268,6 +299,13 @@ class AppLocalizations {
       'system_default_desc': 'Usar idioma del dispositivo',
       'unknown_location': 'Ubicación desconocida',
       'prayer_time': 'Hora de Oración',
+      'quran': 'Corán',
+      'read_quran': 'Leer el Corán',
+      'makki': 'Makki',
+      'madani': 'Madani',
+      'verses_count': 'Versículos',
+      'show_translation': 'Mostrar traducción',
+      'translation_language': 'Idioma de traducción',
 
       'error': 'Error',
       'location_failed': 'Fallo de ubicación',
@@ -315,6 +353,13 @@ class AppLocalizations {
       'system_default_desc': 'Usar idioma do dispositivo',
       'unknown_location': 'Local desconhecido',
       'prayer_time': 'Hora de Oração',
+      'quran': 'Alcorão',
+      'read_quran': 'Ler o Alcorão',
+      'makki': 'Makki',
+      'madani': 'Madani',
+      'verses_count': 'Versículos',
+      'show_translation': 'Mostrar tradução',
+      'translation_language': 'Idioma de tradução',
 
       'error': 'Erro',
       'location_failed': 'Falha na localização',
@@ -362,6 +407,13 @@ class AppLocalizations {
       'system_default_desc': '使用设备语言',
       'unknown_location': '未知位置',
       'prayer_time': '祈祷时间',
+      'quran': '古兰经',
+      'read_quran': '阅读古兰经',
+      'makki': '麦加',
+      'madani': '麦地那',
+      'verses_count': '诗篇',
+      'show_translation': '显示翻译',
+      'translation_language': '翻译语言',
 
       'error': '错误',
       'location_failed': '定位失败',
@@ -408,6 +460,13 @@ class AppLocalizations {
       'system_default_desc': 'Cihaz dilini kullan',
       'unknown_location': 'Bilinmeyen Konum',
       'prayer_time': 'Namaz Vakti',
+      'quran': 'Kur\'an-ı Kerim',
+      'read_quran': 'Kur\'an Oku',
+      'makki': 'Mekki',
+      'madani': 'Medeni',
+      'verses_count': 'Ayet',
+      'show_translation': 'Meali Göster',
+      'translation_language': 'Meal Dili',
 
       'error': 'Hata',
       'location_failed': 'Konum Hatası',
@@ -455,6 +514,13 @@ class AppLocalizations {
       'system_default_desc': 'ڈیوائس کی زبان استعمال کریں',
       'unknown_location': 'نامعلوم مقام',
       'prayer_time': 'نماز کا وقت',
+      'quran': 'قرآن مجید',
+      'read_quran': 'قرآن پڑھیں',
+      'makki': 'مکی',
+      'madani': 'مدنی',
+      'verses_count': 'آیات',
+      'show_translation': 'ترجمہ دکھائیں',
+      'translation_language': 'ترجمہ کی زبان',
 
       'error': 'غلطی',
       'location_failed': 'مقام ناکام',
@@ -502,6 +568,13 @@ class AppLocalizations {
       'system_default_desc': 'استفاده از زبان دستگاه',
       'unknown_location': 'مکان نامعلوم',
       'prayer_time': 'وقت نماز',
+      'quran': 'قرآن کریم',
+      'read_quran': 'تلاوت قرآن',
+      'makki': 'مکی',
+      'madani': 'مدنی',
+      'verses_count': 'آیات',
+      'show_translation': 'نمایش ترجمه',
+      'translation_language': 'زبان ترجمه',
 
       'error': 'خطا',
       'location_failed': 'مکان‌یابی ناموفق',
@@ -549,6 +622,13 @@ class AppLocalizations {
       'system_default_desc': 'デバイスの言語を使用',
       'unknown_location': '不明な場所',
       'prayer_time': '礼拝時間',
+      'quran': 'クルアーン',
+      'read_quran': 'クルアーンを読む',
+      'makki': 'マッカ期',
+      'madani': 'マディーナ期',
+      'verses_count': '節',
+      'show_translation': '翻訳を表示',
+      'translation_language': '翻訳言語',
 
       'error': 'エラー',
       'location_failed': '位置情報の取得に失敗',
@@ -595,6 +675,13 @@ class AppLocalizations {
       'system_default_desc': 'Gerätesprache verwenden',
       'unknown_location': 'Unbekannter Ort',
       'prayer_time': 'Gebetszeit',
+      'quran': 'Koran',
+      'read_quran': 'Koran lesen',
+      'makki': 'Mekkanisch',
+      'madani': 'Medinisch',
+      'verses_count': 'Verse',
+      'show_translation': 'Übersetzung anzeigen',
+      'translation_language': 'Übersetzungssprache',
 
       'error': 'Fehler',
       'location_failed': 'Standort fehlgeschlagen',
@@ -642,6 +729,13 @@ class AppLocalizations {
       'system_default_desc': 'Usa la lingua del dispositivo',
       'unknown_location': 'Posizione Sconosciuta',
       'prayer_time': 'Ora della Preghiera',
+      'quran': 'Corano',
+      'read_quran': 'Leggi il Corano',
+      'makki': 'Meccana',
+      'madani': 'Medinese',
+      'verses_count': 'Versetti',
+      'show_translation': 'Mostra traduzione',
+      'translation_language': 'Lingua traduzione',
 
       'error': 'Errore',
       'location_failed': 'Posizione Fallita',

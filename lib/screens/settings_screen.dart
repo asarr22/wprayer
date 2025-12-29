@@ -11,6 +11,9 @@ import 'package:wprayer/screens/language_screen.dart';
 import 'package:wprayer/screens/calculation_method_screen.dart';
 import 'package:wprayer/services/notification_service.dart';
 
+import 'package:wprayer/providers/quran_settings_provider.dart';
+import 'package:wprayer/screens/quran/quran_translation_screen.dart';
+
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -18,6 +21,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
     final locale = ref.watch(localeProvider);
+    final quranSettings = ref.watch(quranSettingsProvider);
 
     // Get current language name
     String currentLanguage = loc.systemDefault;
@@ -70,16 +74,42 @@ class SettingsScreen extends ConsumerWidget {
                         MaterialPageRoute(
                           builder: (context) => const CalculationMethodScreen(),
                         ),
-                      ).then((_) {
-                        // Refresh state if needed, or rely on provider update
-                        // (Provider update will trigger rebuilds if we watch it, but settings is static mostly)
-                        // Actually, to update the subtitle, we should rebuild or watch something.
-                        // FutureBuilder will re-run if set state called, but simpler is if we just pop back.
-                      });
+                      ).then((_) {});
                     },
                   );
                 },
               ),
+              const SizedBox(height: WSizes.spaceBetweenItems),
+              _buildToggleItem(
+                context,
+                icon: Icons.translate,
+                title: loc.showTranslation,
+                value: quranSettings.showTranslation,
+                onChanged: (value) {
+                  ref
+                      .read(quranSettingsProvider.notifier)
+                      .toggleShowTranslation(value);
+                },
+              ),
+              if (quranSettings.showTranslation) ...[
+                const SizedBox(height: WSizes.spaceBetweenItems),
+                _buildSettingItem(
+                  context,
+                  icon: Icons.language,
+                  title: loc.translationLanguage,
+                  subtitle: quranSettings.translationLanguage.name
+                      .toUpperCase(),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const QuranTranslationScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+
               if (kDebugMode) ...[
                 const SizedBox(height: WSizes.spaceBetweenItems),
                 Text("Debug", style: TextStyle(color: Colors.redAccent)),
@@ -133,6 +163,37 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildToggleItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(WSizes.padding / 2),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(WSizes.borderRadius),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: WColors.primary, size: WSizes.iconSize),
+          const SizedBox(width: WSizes.spaceBetweenItems),
+          Expanded(
+            child: Text(title, style: Theme.of(context).textTheme.titleMedium),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeTrackColor: WColors.primary,
+            activeThumbColor: Colors.white,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSettingItem(
     BuildContext context, {
     required IconData icon,
@@ -175,14 +236,6 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Future<String?> _getCalculationMethod() async {
-    // Only import SharedPreferences here if not already imported at top
-    // assuming 'package:shared_preferences/shared_preferences.dart' is known or needs import.
-    // However, typical pattern is to import at top.
-    // Since I can't see imports, I'll assume I need to add import or this is a mixin.
-    // For safety in this tool step, I will just return the value using the import I'll add.
-
-    // Better: I will let the user know I am adding imports in a separate step if needed.
-    // Actually, I'll just add the import at the top in a separate step to be clean.
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('calculation_method');
   }
