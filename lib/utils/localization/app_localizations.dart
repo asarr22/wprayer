@@ -50,6 +50,8 @@ class AppLocalizations {
       _localizedValues[locale.languageCode]!['system_default_desc']!;
   String get unknownLocation =>
       _localizedValues[locale.languageCode]!['unknown_location']!;
+  String get prayerTime =>
+      _localizedValues[locale.languageCode]!['prayer_time']!;
 
   String get error => _localizedValues[locale.languageCode]!['error']!;
   String get locationFailed =>
@@ -111,7 +113,7 @@ class AppLocalizations {
 
   static const Map<String, Map<String, String>> _localizedValues = {
     'en': {
-      'app_name': 'W Prayer',
+      'app_name': 'Waqt',
       'next_prayer': 'NEXT PRAYER',
       'next_prayer_time': 'Next Prayer Time',
       'default': 'Default',
@@ -124,6 +126,8 @@ class AppLocalizations {
       'select_language': 'Select your preferred language',
       'system_default_desc': 'Use device language',
       'unknown_location': 'Unknown Location',
+      'prayer_time': 'Prayer Time',
+
       'error': 'Error',
       'location_failed': 'Location failed',
       'using_default': 'Using default',
@@ -156,7 +160,7 @@ class AppLocalizations {
       'auto': 'Auto',
     },
     'ar': {
-      'app_name': 'الصلاة',
+      'app_name': 'وقت',
       'next_prayer': 'الصلاة القادمة',
       'next_prayer_time': 'وقت الصلاة القادمة',
       'default': 'افتراضي',
@@ -169,6 +173,8 @@ class AppLocalizations {
       'select_language': 'اختر لغتك المفضلة',
       'system_default_desc': 'اتبع لغة الجهاز',
       'unknown_location': 'موقع غير معروف',
+      'prayer_time': 'وقت الصلاة',
+
       'error': 'خطأ',
       'location_failed': 'فشل تحديد الموقع',
       'using_default': 'تم استخدام الموقع الافتراضي',
@@ -214,6 +220,8 @@ class AppLocalizations {
       'select_language': 'Choisissez votre langue',
       'system_default_desc': 'Utiliser la langue de l\'appareil',
       'unknown_location': 'Lieu inconnu',
+      'prayer_time': 'Heure de Prière',
+
       'error': 'Erreur',
       'location_failed': 'Échec localisation',
       'using_default': 'Utilisation par défaut',
@@ -259,6 +267,8 @@ class AppLocalizations {
       'select_language': 'Selecciona tu idioma',
       'system_default_desc': 'Usar idioma del dispositivo',
       'unknown_location': 'Ubicación desconocida',
+      'prayer_time': 'Hora de Oración',
+
       'error': 'Error',
       'location_failed': 'Fallo de ubicación',
       'using_default': 'Usando defecto',
@@ -304,6 +314,8 @@ class AppLocalizations {
       'select_language': 'Selecione seu idioma',
       'system_default_desc': 'Usar idioma do dispositivo',
       'unknown_location': 'Local desconhecido',
+      'prayer_time': 'Hora de Oração',
+
       'error': 'Erro',
       'location_failed': 'Falha na localização',
       'using_default': 'Usando padrão',
@@ -349,6 +361,8 @@ class AppLocalizations {
       'select_language': '选择您的语言',
       'system_default_desc': '使用设备语言',
       'unknown_location': '未知位置',
+      'prayer_time': '祈祷时间',
+
       'error': '错误',
       'location_failed': '定位失败',
       'using_default': '使用默认',
@@ -393,6 +407,8 @@ class AppLocalizations {
       'select_language': 'Dil Seçin',
       'system_default_desc': 'Cihaz dilini kullan',
       'unknown_location': 'Bilinmeyen Konum',
+      'prayer_time': 'Namaz Vakti',
+
       'error': 'Hata',
       'location_failed': 'Konum Hatası',
       'using_default': 'Varsayılan Kullanılıyor',
@@ -438,6 +454,8 @@ class AppLocalizations {
       'select_language': 'اپنی زبان منتخب کریں',
       'system_default_desc': 'ڈیوائس کی زبان استعمال کریں',
       'unknown_location': 'نامعلوم مقام',
+      'prayer_time': 'نماز کا وقت',
+
       'error': 'غلطی',
       'location_failed': 'مقام ناکام',
       'using_default': 'طے شدہ استعمال',
@@ -483,6 +501,8 @@ class AppLocalizations {
       'select_language': 'زبان خود را انتخاب کنید',
       'system_default_desc': 'استفاده از زبان دستگاه',
       'unknown_location': 'مکان نامعلوم',
+      'prayer_time': 'وقت نماز',
+
       'error': 'خطا',
       'location_failed': 'مکان‌یابی ناموفق',
       'using_default': 'استفاده از پیش‌فرض',
@@ -528,6 +548,8 @@ class AppLocalizations {
       'select_language': '言語を選択',
       'system_default_desc': 'デバイスの言語を使用',
       'unknown_location': '不明な場所',
+      'prayer_time': '礼拝時間',
+
       'error': 'エラー',
       'location_failed': '位置情報の取得に失敗',
       'using_default': 'デフォルトを使用中',
@@ -572,6 +594,8 @@ class AppLocalizations {
       'select_language': 'Wähle deine Sprache',
       'system_default_desc': 'Gerätesprache verwenden',
       'unknown_location': 'Unbekannter Ort',
+      'prayer_time': 'Gebetszeit',
+
       'error': 'Fehler',
       'location_failed': 'Standort fehlgeschlagen',
       'using_default': 'Standard wird verwendet',
@@ -617,6 +641,8 @@ class AppLocalizations {
       'select_language': 'Seleziona la lingua',
       'system_default_desc': 'Usa la lingua del dispositivo',
       'unknown_location': 'Posizione Sconosciuta',
+      'prayer_time': 'Ora della Preghiera',
+
       'error': 'Errore',
       'location_failed': 'Posizione Fallita',
       'using_default': 'Uso predefinito',

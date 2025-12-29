@@ -32,6 +32,8 @@ class SettingsScreen extends ConsumerWidget {
         title: Text(loc.settings),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
+        automaticallyImplyLeading: false,
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Padding(

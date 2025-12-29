@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wprayer/providers/locale_provider.dart';
+import 'package:wprayer/screens/home_screen.dart';
 import 'package:wprayer/utils/constants/texts.dart';
 import 'package:wprayer/utils/localization/app_localizations.dart';
 import 'package:wprayer/utils/theme/app_theme.dart';
-import 'screens/home_screen.dart';
 
 class App extends ConsumerWidget {
   const App({super.key});
