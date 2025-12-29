@@ -40,8 +40,9 @@ class MainActivity : FlutterActivity() {
                     "syncLocationToWatch" -> {
                         val lat = call.argument<Double>("lat")
                         val long = call.argument<Double>("long")
+                        val method = call.argument<String>("method") ?: "MWL"
                         if (lat != null && long != null) {
-                            syncLocationToWatch(lat, long)
+                            syncLocationToWatch(lat, long, method)
                             result.success(null)
                         } else {
                             result.error("INVALID_ARGS", "lat and long required", null)
@@ -135,12 +136,13 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun syncLocationToWatch(lat: Double, long: Double) {
+    private fun syncLocationToWatch(lat: Double, long: Double, method: String) {
         CoroutineScope(Dispatchers.Default).launch {
             try {
                 val putDataMapRequest = PutDataMapRequest.create("/prayer_location").apply {
                     dataMap.putDouble("lat", lat)
                     dataMap.putDouble("long", long)
+                    dataMap.putString("method", method)
                     dataMap.putLong("timestamp", System.currentTimeMillis())
                 }
                 val putDataRequest = putDataMapRequest.asPutDataRequest().setUrgent()

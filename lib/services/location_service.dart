@@ -1,156 +1,144 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 
 class LocationService {
+  /// Attempts to get the current position with an optimized collection window.
   Future<Position> determinePosition() async {
-    await _ensureServiceEnabled();
+    // 1. Check permissions first
     await _ensurePermissionsGranted();
 
-    // Try to get the last known position first.
-    // This fixes the 'LOCATION_SERVICES_DISABLED' crash on devices where
-    // getCurrentPosition() is flaky even when location is on.
+    Position? bestPosition;
+
+    // 2. Try to get the last known as a secondary baseline IMMEDIATELY
     try {
-      Position? lastKnownPosition = await Geolocator.getLastKnownPosition();
-      if (lastKnownPosition != null) {
-        return lastKnownPosition;
+      bestPosition = await Geolocator.getLastKnownPosition();
+      if (bestPosition != null && kDebugMode) {
+        print(
+          "DEBUG: Initial baseline from last known: ${bestPosition.latitude}, ${bestPosition.longitude} (Acc: ${bestPosition.accuracy})",
+        );
       }
     } catch (e) {
-      // Ignore errors here, move to current position
-      if (kDebugMode) {
-        print("Debug: Last known position failed: $e");
+      if (kDebugMode) print("DEBUG: Error getting initial last known: $e");
+    }
+
+    // 3. Start a collection window. We removed the blocking 'isServiceEnabled' check
+    // because on Wear OS, sometimes the stream can wake up the GPS even if the
+    // high-level check returns false or is flaky.
+    if (kDebugMode)
+      print("DEBUG: Starting 5-second location collection window...");
+
+    final completer = Completer<Position>();
+    StreamSubscription<Position>? subscription;
+
+    final locationSettings = AndroidSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 0,
+      forceLocationManager:
+          true, // FORCE GPS to ensure the icon appears on Watch
+    );
+
+    // Timeout logic
+    Timer(const Duration(seconds: 5), () {
+      if (!completer.isCompleted) {
+        if (bestPosition != null) {
+          if (kDebugMode)
+            print(
+              "DEBUG: 5s Collection window ended. Returning best fix (Acc: ${bestPosition?.accuracy})",
+            );
+          completer.complete(bestPosition!);
+        } else {
+          if (kDebugMode) print("DEBUG: 5s timeout. No fix found.");
+          completer.completeError("LOCATION_TIMEOUT");
+        }
+        subscription?.cancel();
       }
-    }
+    });
 
-    LocationSettings locationSettings;
+    subscription =
+        Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+          (position) {
+            if (bestPosition == null ||
+                position.accuracy < bestPosition!.accuracy) {
+              if (kDebugMode)
+                print(
+                  "DEBUG: New best fix: ${position.latitude}, ${position.longitude} (Acc: ${position.accuracy})",
+                );
+              bestPosition = position;
+            }
 
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      locationSettings = AndroidSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 0,
-        forceLocationManager: true, // Often required for Wear OS standalone GPS
-        timeLimit: const Duration(seconds: 15),
-      );
-    } else {
-      locationSettings = const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 0,
-        timeLimit: Duration(seconds: 15),
-      );
-    }
+            if (position.accuracy < 15) {
+              if (!completer.isCompleted) {
+                if (kDebugMode)
+                  print(
+                    "DEBUG: High accuracy fix (<15m) found early. Completing.",
+                  );
+                completer.complete(position);
+                subscription?.cancel();
+              }
+            }
+          },
+          onError: (error) {
+            if (kDebugMode) print("DEBUG: Stream error: $error");
+            if (error.toString().contains("service_disabled")) {
+              if (bestPosition != null && !completer.isCompleted) {
+                completer.complete(bestPosition!);
+                subscription?.cancel();
+              }
+            }
+          },
+          cancelOnError: false,
+        );
 
-    try {
-      return await _getCurrentOrStreamPosition(locationSettings);
-    } on LocationServiceDisabledException {
-      // Give the user a chance to re-enable location and retry once.
-      await _ensureServiceEnabled();
-      return _getCurrentOrStreamPosition(locationSettings);
-    } on PermissionDeniedException {
-      // If permissions were revoked mid-flow, request once more.
-      await _ensurePermissionsGranted();
-      return _getCurrentOrStreamPosition(locationSettings);
-    }
+    return completer.future;
   }
 
   Future<String> getCityCountry(double lat, double long) async {
     try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(lat, long);
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        lat,
+        long,
+      ).timeout(const Duration(seconds: 3));
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
-        return "${place.locality}, ${place.country}";
+        String location =
+            place.locality ??
+            place.subAdministrativeArea ??
+            "Location Detected";
+        return "$location, ${place.country ?? ""}";
       }
     } catch (e) {
-      // Ignore Geocoding errors (e.g. no internet)
+      if (kDebugMode) print("DEBUG: Geocoding failed or timed out: $e");
     }
-    return "Unknown Location";
+    return "Location Detected";
   }
 
-  Future<void> _ensureServiceEnabled() async {
+  Future<String?> getCountryCode(double lat, double long) async {
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (serviceEnabled) return;
-
-      // On some watches, the first check might falsely report disabled.
-      await Future.delayed(const Duration(milliseconds: 300));
-      serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (serviceEnabled) return;
-
-      // If still disabled, ask user to enable it.
-      await Geolocator.openLocationSettings();
-      await Future.delayed(const Duration(seconds: 2));
-
-      serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        throw const LocationServiceDisabledException();
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        lat,
+        long,
+      ).timeout(const Duration(seconds: 3));
+      if (placemarks.isNotEmpty) {
+        return placemarks[0].isoCountryCode;
       }
-    } on PlatformException catch (e) {
-      if (e.code == 'LOCATION_SERVICES_DISABLED') {
-        throw const LocationServiceDisabledException();
-      }
-      // Re-throw if it's something else
-      rethrow;
+    } catch (e) {
+      if (kDebugMode) print("DEBUG: Geocoding country code failed: $e");
     }
+    return null;
   }
 
   Future<void> _ensurePermissionsGranted() async {
     LocationPermission permission = await Geolocator.checkPermission();
-
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.unableToDetermine) {
+    if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
-
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.unableToDetermine) {
-      throw PermissionDeniedException('Location permissions are denied');
-    }
-
     if (permission == LocationPermission.deniedForever) {
       throw PermissionDeniedException(
-        'Location permissions are permanently denied, we cannot request permissions.',
+        'Location permissions are permanently denied.',
       );
     }
-  }
-
-  Future<Position> _getCurrentOrStreamPosition(
-    LocationSettings locationSettings,
-  ) async {
-    try {
-      return await Geolocator.getCurrentPosition(
-        locationSettings: locationSettings,
-      );
-    } on TimeoutException {
-      // Fall back to the first available location from the stream on slow devices.
-      return await Geolocator.getPositionStream(
-        locationSettings: locationSettings,
-      ).first.timeout(
-        const Duration(seconds: 10),
-        onTimeout: () =>
-            throw TimeoutException('Timed out while waiting for location'),
-      );
-    }
-  }
-
-  Stream<Position> getPositionStream() {
-    LocationSettings locationSettings;
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      locationSettings = AndroidSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 0,
-        intervalDuration: const Duration(seconds: 5),
-        forceLocationManager:
-            true, // Use hardware GPS directly if Fused is failing
-      );
-    } else {
-      locationSettings = const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 0,
-      );
-    }
-
-    return Geolocator.getPositionStream(locationSettings: locationSettings);
   }
 }

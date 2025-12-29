@@ -9,18 +9,24 @@ import android.app.PendingIntent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
 import android.util.Log
 
 class PrayerNotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        val action = intent.action
+        Log.d("PrayerReceiver", "Received broadcast: $action")
+
+        if (action == Intent.ACTION_BOOT_COMPLETED || action == "android.intent.action.QUICKBOOT_POWERON") {
+            Log.d("PrayerReceiver", "Rescheduling prayers after boot...")
+            PrayerUtils.rescheduleAlarms(context)
+            return
+        }
+
         val prayerName = intent.getStringExtra("prayer_name") ?: "Prayer"
         val title = intent.getStringExtra("title") ?: "Prayer Time"
         val body = intent.getStringExtra("body") ?: "It's time for $prayerName prayer"
 
-        Log.d("PrayerReceiver", "Received broadcast for $prayerName")
+        Log.d("PrayerReceiver", "Showing notification for $prayerName")
         showNotification(context, prayerName, title, body)
     }
 
@@ -28,7 +34,6 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
         val channelId = "prayer_notifications_v2"
         val notificationId = prayerName.hashCode()
 
-        // Ensure channel exists (Receiver might run while app is closed)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "Prayer Reminders"
             val importance = NotificationManager.IMPORTANCE_HIGH
@@ -48,7 +53,7 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
             .setContentTitle(title)
             .setContentText(body)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_ALARM) // Important for Wear OS visibility
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -56,7 +61,6 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
         try {
             val manager = NotificationManagerCompat.from(context)
             manager.notify(notificationId, builder.build())
-            Log.d("PrayerReceiver", "Notification posted for $prayerName")
         } catch (e: Exception) {
             Log.e("PrayerReceiver", "Failed to post notification", e)
         }

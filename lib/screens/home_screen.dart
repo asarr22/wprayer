@@ -21,10 +21,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Trigger initial data load when the screen initializes
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(prayerProvider.notifier).initData();
-    });
   }
 
   void _handleError(String? error) {

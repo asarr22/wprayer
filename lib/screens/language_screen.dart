@@ -27,9 +27,59 @@ class LanguageScreen extends ConsumerWidget {
         locale: const Locale('en'),
       ),
       LanguageOption(
-        title: 'العربية',
+        title: 'عربي', // Correct Arabic native name
         subtitle: loc.arabic,
         locale: const Locale('ar'),
+      ),
+      LanguageOption(
+        title: 'Français',
+        subtitle: loc.french,
+        locale: const Locale('fr'),
+      ),
+      LanguageOption(
+        title: 'Español',
+        subtitle: loc.spanish,
+        locale: const Locale('es'),
+      ),
+      LanguageOption(
+        title: 'Português',
+        subtitle: loc.portuguese,
+        locale: const Locale('pt'),
+      ),
+      LanguageOption(
+        title: '中文',
+        subtitle: loc.chinese,
+        locale: const Locale('zh'),
+      ),
+      LanguageOption(
+        title: 'Türkçe',
+        subtitle: loc.turkish,
+        locale: const Locale('tr'),
+      ),
+      LanguageOption(
+        title: 'اردو',
+        subtitle: loc.urdu,
+        locale: const Locale('ur'),
+      ),
+      LanguageOption(
+        title: 'فارسی',
+        subtitle: loc.persian,
+        locale: const Locale('fa'),
+      ),
+      LanguageOption(
+        title: '日本語',
+        subtitle: loc.japanese,
+        locale: const Locale('ja'),
+      ),
+      LanguageOption(
+        title: 'Deutsch',
+        subtitle: loc.german,
+        locale: const Locale('de'),
+      ),
+      LanguageOption(
+        title: 'Italiano',
+        subtitle: loc.italian,
+        locale: const Locale('it'),
       ),
     ];
 

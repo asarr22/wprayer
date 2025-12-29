@@ -24,11 +24,18 @@ abstract class BasePrayerComplicationService : SuspendingComplicationDataSourceS
                     try {
                         val lat = dataMap.getDouble("lat")
                         val long = dataMap.getDouble("long")
+                        val method = dataMap.getString("method")
                         val prefs: SharedPreferences = getSharedPreferences("FlutterSharedPreferences", MODE_PRIVATE)
                         val editor = prefs.edit()
                         editor.putString("flutter.flutter.lat", lat.toString())
                         editor.putString("flutter.flutter.long", long.toString())
+                        if (method != null) {
+                            editor.putString("flutter.calculation_method", method)
+                        }
                         editor.apply()
+                        
+                        // Also reschedule alarms for the new location
+                        PrayerUtils.rescheduleAlarms(applicationContext)
                     } catch (e: Exception) {
                         // ignore malformed data
                     }
@@ -53,9 +60,20 @@ abstract class BasePrayerComplicationService : SuspendingComplicationDataSourceS
         val lat = prefs.getString("flutter.flutter.lat", null)?.toDoubleOrNull() ?: 21.5433
         val long = prefs.getString("flutter.flutter.long", null)?.toDoubleOrNull() ?: 39.1728
         val languageCode = prefs.getString("flutter.language_code", null) ?: "en"
+        val methodString = prefs.getString("flutter.calculation_method", "MWL") ?: "MWL"
         
         val coordinates = Coordinates(lat, long)
-        val params = CalculationMethod.UMM_AL_QURA.parameters
+        val params = when (methodString) {
+            "UMM_AL_QURA" -> CalculationMethod.UMM_AL_QURA.parameters
+            "EGYPTIAN" -> CalculationMethod.EGYPTIAN.parameters
+            "KARACHI" -> CalculationMethod.KARACHI.parameters
+            "NORTH_AMERICA" -> CalculationMethod.NORTH_AMERICA.parameters
+            "DUBAI" -> CalculationMethod.DUBAI.parameters
+            "KUWAIT" -> CalculationMethod.KUWAIT.parameters
+            "QATAR" -> CalculationMethod.QATAR.parameters
+            "SINGAPORE" -> CalculationMethod.SINGAPORE.parameters
+            else -> CalculationMethod.MUSLIM_WORLD_LEAGUE.parameters
+        }
         val date = DateComponents.from(Date())
         val prayerTimes = PrayerTimes(coordinates, date, params)
         
