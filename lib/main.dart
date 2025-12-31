@@ -10,8 +10,8 @@ void main() async {
   // Initialize notification channel on startup
   await NotificationService().init();
 
-  // Initialize Quran package
-  await Quran.initialize();
+  // Initialize Quran package in background to avoid blocking startup
+  Quran.initialize();
 
   runApp(const ProviderScope(child: App()));
 }

@@ -26,6 +26,7 @@ class App extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+      
       supportedLocales: AppLocalizations.supportedLocales,
       home: const HomeScreen(),
     );

@@ -62,6 +62,8 @@ class AppLocalizations {
       _localizedValues[locale.languageCode]!['show_translation']!;
   String get translationLanguage =>
       _localizedValues[locale.languageCode]!['translation_language']!;
+  String get qiblaFinder =>
+      _localizedValues[locale.languageCode]!['qibla_finder']!;
 
   String get error => _localizedValues[locale.languageCode]!['error']!;
   String get locationFailed =>
@@ -144,6 +146,7 @@ class AppLocalizations {
       'verses_count': 'Verses',
       'show_translation': 'Show Translation',
       'translation_language': 'Translation Language',
+      'qibla_finder': 'Qibla Finder',
 
       'error': 'Error',
       'location_failed': 'Location failed',
@@ -198,6 +201,7 @@ class AppLocalizations {
       'verses_count': 'آيات',
       'show_translation': 'إظهار الترجمة',
       'translation_language': 'لغة الترجمة',
+      'qibla_finder': 'اتجاه القبلة',
 
       'error': 'خطأ',
       'location_failed': 'فشل تحديد الموقع',
@@ -252,6 +256,7 @@ class AppLocalizations {
       'verses_count': 'Versets',
       'show_translation': 'Afficher la traduction',
       'translation_language': 'Langue de traduction',
+      'qibla_finder': 'Boussole Qibla',
 
       'error': 'Erreur',
       'location_failed': 'Échec localisation',
@@ -306,6 +311,7 @@ class AppLocalizations {
       'verses_count': 'Versículos',
       'show_translation': 'Mostrar traducción',
       'translation_language': 'Idioma de traducción',
+      'qibla_finder': 'Brújula Qibla',
 
       'error': 'Error',
       'location_failed': 'Fallo de ubicación',
@@ -360,6 +366,7 @@ class AppLocalizations {
       'verses_count': 'Versículos',
       'show_translation': 'Mostrar tradução',
       'translation_language': 'Idioma de tradução',
+      'qibla_finder': 'Bússola Qibla',
 
       'error': 'Erro',
       'location_failed': 'Falha na localização',
@@ -414,6 +421,7 @@ class AppLocalizations {
       'verses_count': '诗篇',
       'show_translation': '显示翻译',
       'translation_language': '翻译语言',
+      'qibla_finder': '朝拜方向',
 
       'error': '错误',
       'location_failed': '定位失败',
@@ -467,6 +475,7 @@ class AppLocalizations {
       'verses_count': 'Ayet',
       'show_translation': 'Meali Göster',
       'translation_language': 'Meal Dili',
+      'qibla_finder': 'Kıble Bulucu',
 
       'error': 'Hata',
       'location_failed': 'Konum Hatası',
@@ -521,6 +530,7 @@ class AppLocalizations {
       'verses_count': 'آیات',
       'show_translation': 'ترجمہ دکھائیں',
       'translation_language': 'ترجمہ کی زبان',
+      'qibla_finder': 'قبلہ نما',
 
       'error': 'غلطی',
       'location_failed': 'مقام ناکام',
@@ -575,6 +585,7 @@ class AppLocalizations {
       'verses_count': 'آیات',
       'show_translation': 'نمایش ترجمه',
       'translation_language': 'زبان ترجمه',
+      'qibla_finder': 'قبله‌نما',
 
       'error': 'خطا',
       'location_failed': 'مکان‌یابی ناموفق',
@@ -629,6 +640,7 @@ class AppLocalizations {
       'verses_count': '節',
       'show_translation': '翻訳を表示',
       'translation_language': '翻訳言語',
+      'qibla_finder': 'キブラコンパス',
 
       'error': 'エラー',
       'location_failed': '位置情報の取得に失敗',
@@ -682,6 +694,7 @@ class AppLocalizations {
       'verses_count': 'Verse',
       'show_translation': 'Übersetzung anzeigen',
       'translation_language': 'Übersetzungssprache',
+      'qibla_finder': 'Qibla-Kompass',
 
       'error': 'Fehler',
       'location_failed': 'Standort fehlgeschlagen',
@@ -736,6 +749,7 @@ class AppLocalizations {
       'verses_count': 'Versetti',
       'show_translation': 'Mostra traduzione',
       'translation_language': 'Lingua traduzione',
+      'qibla_finder': 'Bussola Qibla',
 
       'error': 'Errore',
       'location_failed': 'Posizione Fallita',
