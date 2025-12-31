@@ -6,7 +6,7 @@ import 'package:wprayer/utils/localization/app_localizations.dart';
 import 'package:wprayer/screens/prayer_time_screen.dart';
 import 'package:wprayer/screens/settings_screen.dart';
 import 'package:wprayer/screens/quran/quran_home_screen.dart';
-import 'package:wprayer/screens/qibla_finder.dart';
+import 'package:wprayer/screens/qibla_finder_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
