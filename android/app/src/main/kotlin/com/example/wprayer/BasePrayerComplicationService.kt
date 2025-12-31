@@ -27,8 +27,8 @@ abstract class BasePrayerComplicationService : SuspendingComplicationDataSourceS
                         val method = dataMap.getString("method")
                         val prefs: SharedPreferences = getSharedPreferences("FlutterSharedPreferences", MODE_PRIVATE)
                         val editor = prefs.edit()
-                        editor.putString("flutter.flutter.lat", lat.toString())
-                        editor.putString("flutter.flutter.long", long.toString())
+                        editor.putString("flutter.lat", lat.toString())
+                        editor.putString("flutter.long", long.toString())
                         if (method != null) {
                             editor.putString("flutter.calculation_method", method)
                         }
@@ -57,8 +57,8 @@ abstract class BasePrayerComplicationService : SuspendingComplicationDataSourceS
     protected fun getNextPrayerData(): Triple<Prayer, Date, String> {
         val prefs: SharedPreferences = getSharedPreferences("FlutterSharedPreferences", MODE_PRIVATE)
         
-        val lat = prefs.getString("flutter.flutter.lat", null)?.toDoubleOrNull() ?: 21.5433
-        val long = prefs.getString("flutter.flutter.long", null)?.toDoubleOrNull() ?: 39.1728
+        val lat = prefs.getString("flutter.lat", null)?.toDoubleOrNull() ?: 21.5433
+        val long = prefs.getString("flutter.long", null)?.toDoubleOrNull() ?: 39.1728
         val languageCode = prefs.getString("flutter.language_code", null) ?: "en"
         val methodString = prefs.getString("flutter.calculation_method", "MWL") ?: "MWL"
         

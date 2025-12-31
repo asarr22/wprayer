@@ -13,8 +13,8 @@ object PrayerUtils {
     fun rescheduleAlarms(context: Context) {
         val prefs: SharedPreferences = context.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
         
-        val lat = prefs.getString("flutter.flutter.lat", null)?.toDoubleOrNull() ?: prefs.getString("flutter.lat", null)?.toDoubleOrNull() ?: 21.4225
-        val long = prefs.getString("flutter.flutter.long", null)?.toDoubleOrNull() ?: prefs.getString("flutter.long", null)?.toDoubleOrNull() ?: 39.8262
+        val lat = prefs.getString("flutter.lat", null)?.toDoubleOrNull() ?: prefs.getString("flutter.flutter.lat", null)?.toDoubleOrNull() ?: 21.4225
+        val long = prefs.getString("flutter.long", null)?.toDoubleOrNull() ?: prefs.getString("flutter.flutter.long", null)?.toDoubleOrNull() ?: 39.8262
         val languageCode = prefs.getString("flutter.language_code", "en") ?: "en"
         val methodString = prefs.getString("flutter.calculation_method", "MWL") ?: "MWL"
         
