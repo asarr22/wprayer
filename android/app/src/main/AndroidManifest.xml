@@ -87,7 +87,7 @@
         <receiver 
             android:name=".PrayerNotificationReceiver"
             android:enabled="true"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.example.wprayer.NOTIFICATION" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
